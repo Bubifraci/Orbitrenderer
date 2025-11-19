@@ -35,8 +35,7 @@ def maneuver(pl, ba, dv):
 def startSatellite(pl, ba, timeMultiplier = 50000, iterations = None):
     renderer.init()
 
-    orbit_radius_px = 50 #Meter pro Pixel
-    scale = ba.a/orbit_radius_px
+    scale = 75000
 
     posX = None
     posY = None
