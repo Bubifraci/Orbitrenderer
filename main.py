@@ -6,6 +6,8 @@ from models import values
 import renderer
 from math import *
 
+#Bearbeitet von Daniel Fratczak, Daniel Rose, Simon Lingor, Simon Munzinger
+
 #Helfer-Methode um zu prüfen, ob ein Wert als float geparsed werden kann
 def isFloat(val):
     try:
