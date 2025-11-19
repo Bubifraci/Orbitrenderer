@@ -17,18 +17,12 @@ def solve_kepler(M, e, tol=1e-10, max_iter=100):
         
         E = E_new
 
-    raise RuntimeError("Newton iteration fehlgeschlagen")
+    raise RuntimeError("Newton iteration did not converge.")
 
 def startSatellite(timeFrame):
     renderer.init()
-
-    timeMultiplier = 5000
-    
     pl = planet.Planet("Erde", 6378, 5.972e24)
-    ba = bahn.Bahn(pl, 200, 600, 0, 0, 0)
-
-    orbit_radius_px = 50 #Meter pro Pixel
-    scale = ba.a/orbit_radius_px
+    ba = bahn.Bahn(pl, 100, 100, 0, 0, 0)
 
     posX = None
     posY = None
@@ -42,11 +36,10 @@ def startSatellite(timeFrame):
         pos = ba.getVector(E)
         posX = pos[0]
         posY = pos[1]
-        print(f"X: {posX}; Y: {posY}; At time t={curTime-start}")
+        print(f"X: {posX}; Y: {posY}; At time t={curTime}")
 
-        renderer.render(posX, posY, scale, pl.radius)
-
-        curTime += timeFrame * timeMultiplier
+        renderer.render(posX, posY)
+        curTime += timeFrame
         time.sleep(timeFrame)
 
 startSatellite(0.01)

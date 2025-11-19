@@ -5,17 +5,16 @@ class Bahn():
     def __init__(self, pl, rp, ra, inclination, raan, w, anomaly = None, tp=0):
         vals = values.Values()
         self.pl = pl
-        self.rp = (rp + pl.radius) * 1000
-        self.ra = (ra + pl.radius) * 1000
-        self.a = 0.5*(ra+rp)
-        c = self.a - rp
-        self.e = c/self.a
+        self.rp = (rp + pl.radius) * 1000.0
+        self.ra = (ra + pl.radius) * 1000.0
+        self.a = 0.5 * (self.rp + self.ra)
+        self.e = (self.ra - self.rp) / (self.ra + self.rp)
         self.inclination = inclination
         self.raan = raan
         self.w = w
         self.anomaly = anomaly
         self.T = 2*pi*sqrt(pow(self.a, 3)/(vals.G*pl.mass))
-        self.anomaly = None
+        self.anomaly = anomaly
         self.tp = tp
 
     def setAnomaly(self, anomalyE):
