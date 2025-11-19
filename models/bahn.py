@@ -21,15 +21,18 @@ class Bahn():
         anomaly = 2*atan(tan(anomalyE/2)/sqrt((1-self.e)/(1+self.e)))
         return anomaly
 
+    #Vis-Viva Gleichung
     def getSpeedAtPoint(self, r):
         vals = values.Values()
         v = sqrt(vals.G*self.pl.mass*((2/r)-(1/self.a)))
         return v
     
+    #Berechne die Koordinaten mit exzentrischer Anomalie e
     def getVector(self, eAnomaly):
         x = self.a*(cos(eAnomaly)-self.e)
         y = self.a*sqrt(1-pow(self.e, 2))*sin(eAnomaly)
         return [x, y]
     
+    #Berechne Mittle Anomalie nach Vorgabe der Zeit
     def calculateMeanAnomaly(self, time):
         return (2*pi)/self.T*(time-self.tp)
