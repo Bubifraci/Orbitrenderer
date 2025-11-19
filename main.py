@@ -2,6 +2,7 @@ import numpy as np
 import time
 from models import planet
 from models import bahn
+from models import values
 import renderer
 from math import *
 
@@ -21,6 +22,8 @@ def solve_kepler(M, e, tol=1e-10, max_iter=100):
     raise RuntimeError("Newton iteration fehlgeschlagen")
 
 def maneuver(pl, ba, dv):
+    if(ba.e != 0):
+        raise RuntimeError("Für dieses Maneuver muss die Bahn eine Kreisbahn sein!")
     where = input("Wo soll das Manöver durchgeführt werden? (a für Apogäum, p für Perigäum)").lower()
     if(where != "a" or where != "p"):
         return maneuver(pl, ba, dv)
@@ -30,7 +33,7 @@ def maneuver(pl, ba, dv):
             dv = float(dvNew)
         else:
             return maneuver(pl, ba, dv)
-    vi = 2
+    vi = sqrt()
 
 def startSatellite(pl, ba, timeMultiplier = 50000, iterations = None):
     renderer.init()
@@ -42,6 +45,8 @@ def startSatellite(pl, ba, timeMultiplier = 50000, iterations = None):
 
     oldX = 0
     oldY = 0
+
+    vals = values.Values()
 
     start = time.time()
     curTime = start
@@ -60,9 +65,12 @@ def startSatellite(pl, ba, timeMultiplier = 50000, iterations = None):
 
         velX = abs(posX-oldX)
         velY = abs(posY-oldY)
-        velocity = sqrt(pow(velX, 2) + pow(velY, 2))
 
-        print(f"X: {posX:.3f}; Y: {posY:.3f}; At time t={curTime-start:.2f}s; Distance from planet: {distance/1000:.3f}km; Velocity: {velocity/1000:.3f}km/s")
+        #Es gibt zwei Möglichkeiten die momentane Geschindigkeit zu berechnen. 1 -> Über Tangenten in Bezug zur vorherigen Position. 2 -> Durch die Vis-Viva Gleichung.
+        velocity = sqrt(pow(velX, 2) + pow(velY, 2))
+        velocity1 = ba.getSpeedAtPoint(distance)
+
+        print(f"X: {posX:.3f}; Y: {posY:.3f}; At time t={curTime-start:.2f}s; Distance from planet: {distance/1000:.3f}km; Velocity: tangential -> {velocity/1000:.3f}km/s or vis-viva -> {velocity1/1000:.3f}km/s")
 
         renderer.render(posX, posY, scale, pl.radius)
 
@@ -75,5 +83,5 @@ def startSatellite(pl, ba, timeMultiplier = 50000, iterations = None):
         oldY = posY
 
 pl = planet.Planet("Erde", 6378, 5.972e24)
-ba = bahn.Bahn(pl, 200, 6000, 0, 0, 0)
+ba = bahn.Bahn(pl, 200, 600, 0, 0, 0)
 startSatellite(pl, ba)
