@@ -22,8 +22,6 @@ def solve_kepler(M, e, tol=1e-10, max_iter=100):
     raise RuntimeError("Newton iteration fehlgeschlagen")
 
 def maneuver(pl, ba, dv):
-    if(ba.e != 0):
-        raise RuntimeError("Für dieses Maneuver muss die Bahn eine Kreisbahn sein!")
     where = input("Wo soll das Manöver durchgeführt werden? (a für Apogäum, p für Perigäum)").lower()
     if(where != "a" or where != "p"):
         return maneuver(pl, ba, dv)
@@ -33,7 +31,11 @@ def maneuver(pl, ba, dv):
             dv = float(dvNew)
         else:
             return maneuver(pl, ba, dv)
-    vi = sqrt()
+    
+    vi = ba.getSpeedAtPoint(ba.ra)
+
+    if(where == "p"):
+        return None
 
 def startSatellite(pl, ba, timeMultiplier = 50000, iterations = None):
     renderer.init()
@@ -61,7 +63,7 @@ def startSatellite(pl, ba, timeMultiplier = 50000, iterations = None):
         posX = pos[0]
         posY = pos[1]
 
-        distance = sqrt(pow(posX,2) + pow(posY,2)) #Planet ist im Zentrum
+        distance = sqrt(pow(posX,2) + pow(posY,2)) - pl.radius*1000 #Planet ist im Zentrum
 
         velX = abs(posX-oldX)
         velY = abs(posY-oldY)
