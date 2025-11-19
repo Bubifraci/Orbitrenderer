@@ -44,7 +44,7 @@ def maneuver(pl, ba, dv):
 
     newBahn = None
     if(where == "p"):
-        newBahn = bahn.Bahn(pl, r/1000, otherR/1000, ba.inclination, ba.raan, ba.w, ba.anomaly, ba.tp)
+        newBahn = bahn.Bahn(pl, r/1000 - pl.radius, otherR/1000 - pl.radius, ba.inclination, ba.raan, ba.w, ba.anomaly, ba.tp)
     else:
         newBahn = bahn.Bahn(pl, otherR/1000, r/1000, ba.inclination, ba.raan, ba.w, ba.anomaly, ba.tp)
     startSatellite(pl, ba, ba2=newBahn)
@@ -63,7 +63,7 @@ def calculateCoordinates(pl, ba, title, curTime, start, oldX, oldY):
 
         #Es gibt zwei Möglichkeiten die momentane Geschindigkeit zu berechnen. 1 -> Über Tangenten in Bezug zur vorherigen Position. 2 -> Durch die Vis-Viva Gleichung.
         velocity = sqrt(pow(velX, 2) + pow(velY, 2))
-        velocity1 = ba.getSpeedAtPoint(distance)
+        velocity1 = ba.getSpeedAtPoint(sqrt(pow(posX, 2) + pow(posY, 2)))
 
         print(f"{title}: X: {posX:.3f}; Y: {posY:.3f}; At time t={curTime-start:.2f}s; Distance from planet: {distance/1000:.3f}km; Velocity: tangential -> {velocity/1000:.3f}km/s or vis-viva -> {velocity1/1000:.3f}km/s")
         return[posX, posY]
@@ -105,7 +105,53 @@ def startSatellite(pl, ba, timeMultiplier = 50000, iterations = None, ba2 = None
         oldX = posX
         oldY = posY
 
+def startProgram():
+    pl = None
 
-pl = planet.Planet("Erde", 6378, 5.972e24)
-ba = bahn.Bahn(pl, 200, 600, 0, 0, 0)
-maneuver(pl, ba, None)
+    title = None
+    mass = None
+    radius = None
+
+    print("Willkommen zum Umlaufbahnrenderer! Zunächst, wir fangen damit an, den Planeten einzurichten, um den die Objekte rotieren.")
+    plName = input("Namen des Planeten (wird Erde eingegeben, werden sofort die Werte für die Erde initialisiert): ")
+    if(plName.lower() == "erde"):
+        pl = planet.Planet("Erde", 6378, 5.972e24)
+        title = "Erde"
+        mass = pl.mass
+        radius = 6378
+    else:
+        title = plName
+        plMass = ""
+        while(not plMass.isnumeric()):
+            plMass = input(f"Gebe nun die Masse des Planeten {title} an (in kg): ")
+        mass = float(plMass)
+        plRadius = ""
+        while(not plRadius.isnumeric()):
+            plRadius = input(f"Gebe nun den Radius des Planeten {title} an (in km): ")
+        radius = float(plRadius)
+    shallContinue = ""
+    while(shallContinue.lower() != "j" and shallContinue.lower() != "n"):
+        shallContinue = input(f"Der Planet {title} hat die Masse {mass}kg und den Radius {radius}km. Ist das korrekt (j/n)? ")
+    if(shallContinue == "n"):
+        startProgram()
+    pl = planet.Planet(title, radius, mass)
+    print("\nNun kümmern wir uns um die Umlaufbahn. ")
+    baRp = ""
+    while(not baRp.isnumeric()):
+        baRp = input("Gebe die Höhe am Perigäum der Umlaufbahn an: ")
+    rp = float(baRp)
+    baRa = ""
+    while(not baRa.isnumeric()):
+        baRa = input("Gebe die Höhe am Apogäum der Umlaufbahn an: ")
+    ra = float(baRa)
+    ba = bahn.Bahn(pl, rp, ra, 0, 0, 0)
+
+    shallManeuver = ""
+    while(shallManeuver.lower() != "j" and shallManeuver.lower() != "n"):
+        shallManeuver = input("Soll ein Manöver durchgeführt werden? (j/n) ")
+    if(shallManeuver == "j"):
+        maneuver(pl, ba, None)
+    else:
+        startSatellite(pl, ba)
+
+startProgram()

@@ -1,1 +1,1 @@
-    renderer.init()
+calculate
