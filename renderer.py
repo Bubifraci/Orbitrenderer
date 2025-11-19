@@ -20,8 +20,8 @@ centerY = screen_height/2
 #Initialisiere
 def init():
     global screen
-    screen = pygame.display.set_mode((screen_width, screen_height))
     pygame.init()
+    screen = pygame.display.set_mode((screen_width, screen_height))
 
 #Rendere ein/zwei Umlaufbahnen
 def render(posX, posY, scale, plRadius, posX2 = None, posY2 = None):

@@ -6,6 +6,14 @@ from models import values
 import renderer
 from math import *
 
+#Helfer-Methode um zu prüfen, ob ein Wert als float geparsed werden kann
+def isFloat(val):
+    try:
+        a = float(val)
+        return True
+    except ValueError:
+        return False
+
 #Lösen der Kepler-Gleichung durch Newton-Verfahren. M ist die mittlere Anomalie, e ist die Exzentrizität, tol ist die Fehlertoleranz und max_iter begrenzt die Anzahl der Iterationen
 def solve_kepler(M, e, tol=1e-10, max_iter=100):
     #Erstbeste Schätzung auf Basis der Exzentrizität
@@ -30,13 +38,13 @@ def solve_kepler(M, e, tol=1e-10, max_iter=100):
     raise RuntimeError("Newton iteration fehlgeschlagen")
 
 #Dialogsystem zum Ausführen eines Manövers nach 2.2b. Rendert die originale Bahn (in weiß) und die neue Bahn nach dem Manöver (in rot)
-def maneuver(pl, ba, dv):
+def maneuver(pl, ba, dv, timeMultiplier = 50000):
     where = input("Wo soll das Manöver durchgeführt werden? (a für Apogäum, p für Perigäum): ")
     if(where.lower() != "a" and where.lower() != "p"):
         return maneuver(pl, ba, dv)
     if(dv == None):
         dvNew = input("Wie lautet das dv (in m/s)?: ")
-        if(dvNew.isnumeric()):
+        if(isFloat(dvNew)):
             dv = float(dvNew)
         else:
             return maneuver(pl, ba, dv)
@@ -58,8 +66,8 @@ def maneuver(pl, ba, dv):
     if(where == "p"):
         newBahn = bahn.Bahn(pl, r/1000 - pl.radius, otherR/1000 - pl.radius, ba.inclination, ba.raan, ba.w, ba.anomaly, ba.tp)
     else:
-        newBahn = bahn.Bahn(pl, otherR/1000, r/1000, ba.inclination, ba.raan, ba.w, ba.anomaly, ba.tp)
-    startSatellite(pl, ba, ba2=newBahn)
+        newBahn = bahn.Bahn(pl, otherR/1000 - pl.radius, r/1000 - pl.radius, ba.inclination, ba.raan, ba.w, ba.anomaly, ba.tp)
+    startSatellite(pl, ba, ba2=newBahn, timeMultiplier=timeMultiplier)
 
 #Logik um Koordinaten zu berechnen
 def calculateCoordinates(pl, ba, title, curTime, start, oldX, oldY):
@@ -80,7 +88,7 @@ def calculateCoordinates(pl, ba, title, curTime, start, oldX, oldY):
         velocity = sqrt(pow(velX, 2) + pow(velY, 2))
         velocity1 = ba.getSpeedAtPoint(sqrt(pow(posX, 2) + pow(posY, 2)))
 
-        print(f"{title}: X: {posX:.3f}; Y: {posY:.3f}; At time t={curTime-start:.2f}s; Distance from planet: {distance/1000:.3f}km; Velocity: tangential -> {velocity/1000:.3f}km/s or vis-viva -> {velocity1/1000:.3f}km/s")
+        print(f"{title}: X: {posX:.3f}; Y: {posY:.3f}; Zur Zeit t={curTime-start:.2f}s; Distanz vom Planeten: {distance/1000:.3f}km; Geschwindigkeit: Tangential -> {velocity/1000:.3f}km/s oder vis-viva -> {velocity1/1000:.3f}km/s")
         return[posX, posY]
     
 #Funktion zum Starten eines Satelliten, ggf. auch mit einer zweiten Umlaufbahn, falls ein Manöver ausgeführt wurde
@@ -162,39 +170,46 @@ def startProgram():
     else:
         title = plName
         plMass = ""
-        while(not plMass.isnumeric()):
+        while(not isFloat(plMass)):
             plMass = input(f"Gebe nun die Masse des Planeten {title} an (in kg): ")
         mass = float(plMass)
         plRadius = ""
-        while(not plRadius.isnumeric()):
+        while(not isFloat(plRadius)):
             plRadius = input(f"Gebe nun den Radius des Planeten {title} an (in km): ")
         radius = float(plRadius)
     shallContinue = ""
     while(shallContinue.lower() != "j" and shallContinue.lower() != "n"):
         shallContinue = input(f"Der Planet {title} hat die Masse {mass}kg und den Radius {radius}km. Ist das korrekt (j/n)? ")
     if(shallContinue == "n"):
-        startProgram()
+        return startProgram()
     pl = planet.Planet(title, radius, mass)
 
     #Umlaufbahn Setup
     print("\nNun kümmern wir uns um die Umlaufbahn. ")
     baRp = ""
-    while(not baRp.isnumeric()):
+    while(not isFloat(baRp)):
         baRp = input("Gebe die Höhe am Perigäum der Umlaufbahn an: ")
     rp = float(baRp)
     baRa = ""
-    while(not baRa.isnumeric()):
+    while(not isFloat(baRa)):
         baRa = input("Gebe die Höhe am Apogäum der Umlaufbahn an: ")
     ra = float(baRa)
     ba = bahn.Bahn(pl, rp, ra, 0, 0, 0)
+
+    #Zeitskalierung
+    timeScale = input("Wie soll die Zeit modifiziert werden (wieviele Sekunden in der Simulation pro echter Sekunde) -> Standardmäßig auf 50.000: ")
+    if(isFloat(timeScale)):
+        timeScale = float(timeScale)
+    else:
+        timeScale = 50000
 
     #Manöver ausführen? (Aufgabe 2.2b)
     shallManeuver = ""
     while(shallManeuver.lower() != "j" and shallManeuver.lower() != "n"):
         shallManeuver = input("Soll ein Manöver durchgeführt werden? (j/n) ")
     if(shallManeuver == "j"):
-        maneuver(pl, ba, None)
+        maneuver(pl, ba, None, timeMultiplier=timeScale)
     else:
-        startSatellite(pl, ba)
+        startSatellite(pl, ba, timeMultiplier=timeScale)
 
 startProgram()
